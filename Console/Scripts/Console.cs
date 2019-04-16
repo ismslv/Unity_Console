@@ -1,6 +1,6 @@
 ﻿/* CONSOLE
- * V0.24
- * FMLHT, 23.11.2018
+ * V0.26
+ * FMLHT, 28.03.2019
  */
 
 using System.Collections;
@@ -10,12 +10,16 @@ using System.Text.RegularExpressions;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
+
+namespace FMLHT {
 
 public class Console : MonoBehaviour {
 
     public static Console a;
 
     public KeyCode KeyToggle = KeyCode.Tab;
+    new public string name = "FMLHT";
     public Canvas canvas;
     public bool searchForCanvas = true;
     public bool visibleFromStart = false;
@@ -30,7 +34,6 @@ public class Console : MonoBehaviour {
     private Text textSuggestion;
 
     private bool isVisible;
-    private bool isVisibleA;
     private bool isAutocomplete;
     private string suggestion;
 
@@ -65,41 +68,45 @@ public class Console : MonoBehaviour {
 
     private void Awake()
     {
-        a = this;
+        if (Console.a == null) {
+            a = this;
 
-        if (canvas == null)
-        {
-            if (searchForCanvas)
+            if (canvas == null)
             {
-                canvas = FindObjectOfType<Canvas>();
+                if (searchForCanvas)
+                {
+                    canvas = FindObjectOfType<Canvas>();
+                }
+                if (canvas == null || !searchForCanvas)
+                {
+                    GameObject c_ = Instantiate(Resources.Load("ConsoleCanvasEmpty", typeof(GameObject)) as GameObject);
+                    canvas = c_.GetComponent<Canvas>();
+                }
             }
-            if (canvas == null || !searchForCanvas)
-            {
-                GameObject c_ = Instantiate(Resources.Load("ConsoleCanvasEmpty", typeof(GameObject)) as GameObject);
-                canvas = c_.GetComponent<Canvas>();
-            }
+            GameObject b = Instantiate(Resources.Load("ConsoleBody", typeof(GameObject)) as GameObject,
+                canvas.transform);
+            b.transform.SetAsLastSibling();
+            body = b.transform.Find("Body").gameObject;
+            bodyQ = body.transform.Find("Q").GetComponent<RectTransform>();
+            textSuggestion = bodyQ.Find("Suggestion").GetComponent<Text>();
+            bodyA = body.transform.Find("A").GetComponent<RectTransform>();
+            textA = bodyA.Find("AnswerNest").Find("Answer").GetComponent<Text>();
+            input = body.GetComponentInChildren<InputField>();
+            bodyB = body.transform.Find("B").GetComponent<RectTransform>();
+            logB = body.transform.Find("Log").GetComponent<Text>();
+
+            bodyQ.Find("TitleQ").GetComponent<Text>().text = name + ", ";
+            bodyA.Find("TitleA").GetComponent<Text>().text = name + ":";
+
+            body.SetActive(false);
+            bodyA.gameObject.SetActive(false);
+            isVisible = false;
+            isAutocomplete = true;
+
+            this.transform.SetParent(null);
+
+            RegisterDefaults();
         }
-        GameObject b = Instantiate(Resources.Load("ConsoleBody", typeof(GameObject)) as GameObject,
-            canvas.transform);
-        b.transform.SetAsLastSibling();
-        body = b.transform.Find("Body").gameObject;
-        bodyQ = body.transform.Find("Q").GetComponent<RectTransform>();
-        textSuggestion = bodyQ.Find("Suggestion").GetComponent<Text>();
-        bodyA = body.transform.Find("A").GetComponent<RectTransform>();
-        textA = bodyA.Find("Answer").GetComponent<Text>();
-        input = body.GetComponentInChildren<InputField>();
-        bodyB = body.transform.Find("B").GetComponent<RectTransform>();
-        logB = body.transform.Find("Log").GetComponent<Text>();
-
-        body.SetActive(false);
-        bodyA.gameObject.SetActive(false);
-        isVisible = false;
-        isVisibleA = false;
-        isAutocomplete = true;
-
-        this.transform.SetParent(null);
-
-        RegisterDefaults();
     }
 
     void Start () {
@@ -298,7 +305,7 @@ public class Console : MonoBehaviour {
         b.GetComponentInChildren<Text>().text = label;
     }
 
-    void Process (string data)
+    public void Process (string data)
     {
         var dataAll = Regex.Matches(data, @"[\""|\'].+?[\""|\']|[^ ]+")
                 .Cast<Match>()
@@ -463,7 +470,7 @@ public class Console : MonoBehaviour {
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
-                Application.Quit();
+                UnityEngine.Application.Quit();
 #endif
             }
         });
@@ -506,7 +513,7 @@ public class Console : MonoBehaviour {
             }
         });
 
-        Register(new Command()
+        /* Register(new Command()
         {
             name = "save_watchers",
             action = (s) =>
@@ -519,8 +526,10 @@ public class Console : MonoBehaviour {
                 File.WriteAllLines(filename, logList.ToArray());
                 Say("Saved to " + filename);
             }
-        });
+        }); */
     }
 
     #endregion
+}
+
 }

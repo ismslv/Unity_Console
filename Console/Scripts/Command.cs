@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
+namespace FMLHT {
+
 public class Command {
     public string name;
     public string argumentsText;
@@ -27,4 +29,6 @@ public class Watcher
             r = Regex.Replace(r, "<.*?>", string.Empty);
         return r;
     }
+}
+
 }

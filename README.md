@@ -1,6 +1,8 @@
 # Unity_Console
 
-Console system for Unity projects, v0.24
+![Screenshot](Screenshot.jpg)
+
+Console system for Unity projects, v0.26
 
 Installation:
 
